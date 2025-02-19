@@ -1,6 +1,7 @@
 const getState = ({ getStore, getActions, setStore }) => {
 	return {
 		store: {
+			user: null,
 			message: null,
 			demo: [
 				{
@@ -19,6 +20,51 @@ const getState = ({ getStore, getActions, setStore }) => {
 			// Use getActions to call a function within a fuction
 			exampleFunction: () => {
 				getActions().changeColor(0, "green");
+			},
+
+			registro: async(email, password) => {
+				try {
+					const response = await fetch(`${process.env.BACKEND_URL}/api/registro`, {
+						method: 'POST',
+						headers: {'Content-Type': 'application/json'},
+						body: JSON.stringify({email, password})
+					})
+					if(!response.ok) throw new Error("error en el registro");
+					const data = await response.json()
+					console.log(data)
+				} catch (error){
+					console.log(error)
+					return false
+				}
+			},
+
+			login: async (email, password) => {
+				try {
+					const response =await fetch(process.env.BACKEND_URL+ '/api/login',{
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+						},
+						body: JSON.stringify(email, password)
+					})
+					if(!response.ok) throw new Error("error al iniciar sesión");
+					const data = await response.json()
+					console.log(data)
+					localStorage.setItem('token', data.token)
+					setStore({auth: true, token: data.token})
+					return true
+				} catch (error) {
+					console.error(error)
+					return false
+				}
+			},
+
+			protregido: async() => {
+				const token = sessionStorage.getItem('token');
+				const response = await fetch(`${process.env.BACKEND_URL}/api/protected`, {
+					headers: {'Authorization': `Bearer ${token}`}
+				});
+				return await response.json();
 			},
 
 			getMessage: async () => {
